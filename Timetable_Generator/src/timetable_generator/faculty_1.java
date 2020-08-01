@@ -384,46 +384,49 @@ public class faculty_1 extends JFrame {
 		JButton btnUpdateAttendance = new JButton("Update attendance");
 		btnUpdateAttendance.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				int k=0;
-				try{
-					String query="select cid from courses where f_id=?";
-					PreparedStatement pst=conn.prepareStatement(query);
-					pst.setString(1,username );
-					ResultSet rs=pst.executeQuery();
-					int course_id=Integer.parseInt(textFieldcid.getText());
-					while(rs.next()){
-						if(course_id==rs.getInt("cid")){
-							k=1;
-							break;
-						}
-					}
-					pst.close();
-					rs.close();
-					//conn.close();
-				}
-				catch(Exception e){
-					JOptionPane.showMessageDialog(null, e);
-				}
-				if(k==1){
+				if(!textFieldcid.getText().equals("")&&!textFieldtcc.getText().equals("")&&!textFieldtca.getText().equals("")&&!textFieldsrn.getText().equals("")){
+					int k=0;
 					try{
-						String query="update attendance set total_no_classes=? ,atd=? where sroll=? and course_id=?";
+						String query="select cid from courses where f_id=?";
 						PreparedStatement pst=conn.prepareStatement(query);
-						pst.setInt(1,Integer.parseInt(textFieldtcc.getText()) );
-						pst.setInt(2,Integer.parseInt(textFieldtca.getText()) );
-						pst.setString(3,textFieldsrn.getText() );
-						pst.setString(4,textFieldcid.getText() );
-						pst.executeQuery();
-						JOptionPane.showMessageDialog(null, "Attendance updated successfully");
+						pst.setString(1,username );
+						ResultSet rs=pst.executeQuery();
+						int course_id=Integer.parseInt(textFieldcid.getText());
+						while(rs.next()){
+							if(course_id==rs.getInt("cid")){
+								k=1;
+								break;
+							}
+						}
 						pst.close();
+						rs.close();
 						//conn.close();
 					}
 					catch(Exception e){
 						JOptionPane.showMessageDialog(null, e);
 					}
+					if(k==1){
+						try{
+							String query="update attendance set total_no_classes=? ,atd=? where sroll=? and course_id=?";
+							PreparedStatement pst=conn.prepareStatement(query);
+							pst.setInt(1,Integer.parseInt(textFieldtcc.getText()) );
+							pst.setInt(2,Integer.parseInt(textFieldtca.getText()) );
+							pst.setString(3,textFieldsrn.getText() );
+							pst.setString(4,textFieldcid.getText() );
+							pst.executeQuery();
+							JOptionPane.showMessageDialog(null, "Attendance updated successfully if the student is registered under the given course");
+							pst.close();
+							//conn.close();
+						}
+						catch(Exception e){
+							JOptionPane.showMessageDialog(null, e);
+						}
+					}
+					else JOptionPane.showMessageDialog(null, "Course is not registered under you");
+					
+					refreshtable_1();
 				}
-				else JOptionPane.showMessageDialog(null, "Course is not registered under you");
-				
-				refreshtable_1();
+				else JOptionPane.showMessageDialog(null, "None of the fiels can be empty");
 			}
 		});
 		btnUpdateAttendance.setBounds(188, 482, 145, 25);

@@ -14,7 +14,7 @@ public class generate_tt_1 {
 	public int groups=20;
 	public int no_year=4;
 	public int no_branches=5;
-	public int no_schools=4;
+	public int no_schools=3;
 	
 	public boolean all_coloured(int[] colour){
 		int i;
@@ -49,7 +49,7 @@ public class generate_tt_1 {
 		int i=0;
 		
 		try{
-			String query="select * from courses";
+			String query="select * from courses order by cid";
 			PreparedStatement pst=conn.prepareStatement(query);
 			ResultSet rs=pst.executeQuery();
 			while(rs.next()){
@@ -287,7 +287,7 @@ public class generate_tt_1 {
 		System.out.println("slots");
 		for(m=0;m<no_colours;m++){
 			for(n=0;n<slot.get(m).size();n++){
-				System.out.print(slot.get(m).get(n)+"  ");
+				System.out.print(slot.get(m).get(n)+"-"+cr[slot.get(m).get(n)].course_strength+"  ");
 			}
 			System.out.println("");
 		}
@@ -313,7 +313,7 @@ public class generate_tt_1 {
 				}
 			}
 			if(cr[slot.get(m).get(0)].assigned_classroom.capacity==0){
-				JOptionPane.showMessageDialog(null, "Timetable generation failed as there are not big enough classrooms");
+				JOptionPane.showMessageDialog(null, "Timetable generation failed as there are not big enough classrooms or classroom of required type not present");
 				JOptionPane.showMessageDialog(null, "Course id: "+cr[slot.get(m).get(0)].cid+" name: "+cr[slot.get(m).get(0)].cname+" has strength "+cr[slot.get(m).get(0)].course_strength+" but there is no classroom with that capacity");
 				System.exit(0);
 			}
@@ -365,12 +365,16 @@ public class generate_tt_1 {
 			for(Integer q:slot.get(m)){
 				if(cr[q].course_type_id==2){
 					w++;
-					break;
+					//break;
 				}
 			}
-			if(w==0)slot_lab.add(0);
-			else slot_lab.add(1);
+			//if(w==0)slot_lab.add(0);
+			//else slot_lab.add(1);
+			slot_lab.add(w);
 		}
+		int swlc=0;
+		for(int zz=0;zz<slot_lab.size();zz++)if(slot_lab.get(zz)>0)swlc++;
+		if(swlc>10)JOptionPane.showMessageDialog(null,"Not enough slots to slot all labs");
 		
 		//printing slot_time
 		System.out.println("slot_time");
@@ -416,7 +420,7 @@ public class generate_tt_1 {
 		slot_time_inc=(Vector<Integer>) slot_time.clone();
 		if(total_hours<days*no_time_slots){
 			for(m=0;m<no_slots;m++){
-				if(slot_lab.get(m)==1 && total_hours<days*no_time_slots){
+				if(slot_lab.get(m)>0&& total_hours<days*no_time_slots){
 					slot_time_inc.setElementAt(slot_time_inc.get(m)+1,m);
 					total_hours++;
 				}
@@ -441,10 +445,15 @@ public class generate_tt_1 {
 		}
 		Random rand = new Random(); 
 		for(m=0;m<no_slots;m++){
-			if(slot_lab.get(m)==1){
+			if(slot_lab.get(m)>0){
 				int r=rand.nextInt(total_lab_slots);
 				int s=lab_time_slots.get(r);
 				lab_time_slots.remove(r);
+				if(s%2==0)lab_time_slots.remove(r);
+				if(s%2==1)lab_time_slots.remove(r-1);
+				System.out.println("hi "+r+"-"+s);
+				for(int zz=0;zz<lab_time_slots.size();zz++)System.out.print(lab_time_slots.get(zz)+" ");
+				System.out.println();
 				int[] z=new int[3];;
 				z[0]=(s/4)*9;
 				if(s%4==1)z[0]+=1;
@@ -455,7 +464,7 @@ public class generate_tt_1 {
 				for(i=0;i<3;i++){
 					time_slots.removeElement(z[i]);
 				}
-				total_lab_slots--;
+				total_lab_slots-=2;
 				total_slots-=3;
 				for(Integer q:slot.get(m)){
 					if(cr[q].course_type_id==2){
@@ -500,7 +509,7 @@ public class generate_tt_1 {
 				//better chance of making sure there are no multiple one hour periods of a course on the same day
 				int j;
 				for(i=0;i<10;i++){
-					System.out.println("hi "+i+" "+m+" "+n+" "+s);
+					//System.out.println("hi "+i+" "+m+" "+n+" "+s);
 					Vector<Integer> c=new Vector<Integer>();
 					for(j=(s/9)*9;j<(s/9)*9+9;j++){
 						c.add(j);
